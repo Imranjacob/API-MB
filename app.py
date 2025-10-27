@@ -107,35 +107,35 @@ def create_app():
     # API Resources
     class LoginResource(Resource):
         def post(self):
-            print("🔐 Login endpoint called")
+            print("ðŸ” Login endpoint called")
 
             # Get JSON data from request
             if not request.is_json:
-                print("❌ Request is not JSON")
+                print("âŒ Request is not JSON")
                 return {'message': 'Missing JSON in request'}, 400
 
             data = request.get_json()
             username = data.get('username')
             password = data.get('password')
 
-            print(f"📧 Username received: {username}")
+            print(f"ðŸ“§ Username received: {username}")
 
             if not username or not password:
-                print("❌ Missing username or password")
+                print("âŒ Missing username or password")
                 return {'message': 'Missing username or password'}, 400
 
             # Find user
             user = User.query.filter_by(username=username).first()
 
             if not user:
-                print("❌ User not found")
+                print("âŒ User not found")
                 return {'message': 'Invalid credentials'}, 401
 
-            print(f"✅ User found: {user.username}")
+            print(f"âœ… User found: {user.username}")
 
             # Check password
             if user.check_password(password) and user.is_active:
-                print("✅ Password correct, generating token")
+                print("âœ… Password correct, generating token")
 
                 # Convert user.id to string for JWT identity
                 access_token = create_access_token(
@@ -155,10 +155,10 @@ def create_app():
                         'role': user.role
                     }
                 }
-                print("✅ Login successful, returning response")
+                print("âœ… Login successful, returning response")
                 return response_data, 200
             else:
-                print("❌ Password incorrect or user inactive")
+                print("âŒ Password incorrect or user inactive")
                 return {'message': 'Invalid credentials'}, 401
 
     class VerifyTokenResource(Resource):
@@ -222,7 +222,7 @@ def create_app():
         def get(self):
             current_user_id = get_jwt_identity()
             user = User.query.get(int(current_user_id))
-            print(f"🔐 Test auth called by user ID: {current_user_id}")
+            print(f"ðŸ” Test auth called by user ID: {current_user_id}")
             return {
                 'message': 'JWT is working!',
                 'user_id': current_user_id,
@@ -233,56 +233,56 @@ def create_app():
         @jwt_required()
         def get(self):
             try:
-                print("🔍 Documents endpoint called")
-                print("📋 Request headers:", dict(request.headers))
-                print("📋 Request headers:", dict(request.headers))
+                print("ðŸ” Documents endpoint called")
+                print("ðŸ“‹ Request headers:", dict(request.headers))
+                print("ðŸ“‹ Request headers:", dict(request.headers))
 
                 # Manual JWT verification for debugging
                 auth_header = request.headers.get('Authorization', '')
-                print(f"🔑 Authorization header: {auth_header}")
+                print(f"ðŸ”‘ Authorization header: {auth_header}")
 
                 if not auth_header.startswith('Bearer '):
-                    print("❌ No Bearer token in Authorization header")
+                    print("âŒ No Bearer token in Authorization header")
                     return {'message': 'Missing or invalid Authorization header'}, 401
 
                 token = auth_header[7:]  # Remove 'Bearer ' prefix
-                print(f"📦 Token received (first 50 chars): {token[:50]}...")
+                print(f"ðŸ“¦ Token received (first 50 chars): {token[:50]}...")
 
                 try:
                     # Manual token decoding
                     import jwt as pyjwt
                     decoded_token = pyjwt.decode(token, app.config['JWT_SECRET_KEY'], algorithms=['HS256'])
-                    print(f"✅ Token manually decoded: {decoded_token}")
+                    print(f"âœ… Token manually decoded: {decoded_token}")
                     current_user_id = decoded_token.get('sub')
 
                     if not current_user_id:
-                        print("❌ No 'sub' claim in token")
+                        print("âŒ No 'sub' claim in token")
                         return {'message': 'Invalid token: no user identity'}, 422
 
                 except pyjwt.ExpiredSignatureError:
-                    print("❌ Token has expired")
+                    print("âŒ Token has expired")
                     return {'message': 'Token has expired'}, 401
                 except pyjwt.InvalidTokenError as e:
-                    print(f"❌ Invalid token: {e}")
+                    print(f"âŒ Invalid token: {e}")
                     return {'message': f'Invalid token: {str(e)}'}, 422
                 except Exception as e:
-                    print(f"❌ Token decoding error: {e}")
+                    print(f"âŒ Token decoding error: {e}")
                     return {'message': f'Token error: {str(e)}'}, 422
 
                 current_user_id = get_jwt_identity()
-                print(f"✅ JWT Identity extracted: {current_user_id}")
+                print(f"âœ… JWT Identity extracted: {current_user_id}")
 
                 # Verify user exists
                 user = User.query.get(int(current_user_id))
                 if not user:
-                    print(f"❌ User not found for ID: {current_user_id}")
+                    print(f"âŒ User not found for ID: {current_user_id}")
                     return {'message': 'User not found'}, 404
 
-                print(f"✅ User verified: {user.username} (ID: {user.id})")
+                print(f"âœ… User verified: {user.username} (ID: {user.id})")
 
                 # Get documents
                 documents = Document.query.filter_by(user_id=int(current_user_id)).all()
-                print(f"📄 Found {len(documents)} documents for user {user.username}")
+                print(f"ðŸ“„ Found {len(documents)} documents for user {user.username}")
 
                 return {
                     'documents': [doc.to_dict() for doc in documents],
@@ -290,7 +290,7 @@ def create_app():
                 }, 200
 
             except Exception as e:
-                print(f"❌ Error in documents endpoint: {str(e)}")
+                print(f"âŒ Error in documents endpoint: {str(e)}")
                 import traceback
                 traceback.print_exc()
                 return {'message': f'Server error: {str(e)}'}, 500
@@ -391,7 +391,7 @@ def create_app():
         def get(self, document_id):
             try:
                 current_user_id = get_jwt_identity()
-                print(f"🔍 Getting document {document_id} for user {current_user_id}")
+                print(f"ðŸ” Getting document {document_id} for user {current_user_id}")
 
                 document = Document.query.get(document_id)
                 if not document:
@@ -400,14 +400,14 @@ def create_app():
                 # Check if document belongs to current user
                 if document.user_id != int(current_user_id):
                     print(
-                        f"❌ Access denied: Document {document_id} belongs to user {document.user_id}, but current user is {current_user_id}")
+                        f"âŒ Access denied: Document {document_id} belongs to user {document.user_id}, but current user is {current_user_id}")
                     return {'message': 'Access denied'}, 403
 
-                print(f"✅ Access granted to document {document_id}")
+                print(f"âœ… Access granted to document {document_id}")
                 return {'document': document.to_dict()}, 200
 
             except Exception as e:
-                print(f"❌ Error in get document: {str(e)}")
+                print(f"âŒ Error in get document: {str(e)}")
                 return {'message': f'Server error: {str(e)}'}, 500
 
         @jwt_required()
@@ -783,7 +783,7 @@ def create_app():
                     zip_ref.extractall(temp_dir)
                     extracted_file = os.path.join(temp_dir, f"{uuid_part}.pdf")
 
-                print(f"📦 Decompressed and sending original file: {extracted_file}")
+                print(f"ðŸ“¦ Decompressed and sending original file: {extracted_file}")
                 response = send_file(
                     extracted_file,
                     as_attachment=True,
@@ -799,11 +799,11 @@ def create_app():
                 return response
 
             except Exception as e:
-                print(f"⚠️ Failed to decompress archive: {e}")
+                print(f"âš ï¸ Failed to decompress archive: {e}")
 
         # Step 2: Fallback to compressed version if ZIP not found
         if os.path.exists(document.file_path):
-            print(f"📥 Sending compressed version (original ZIP not found): {document.file_path}")
+            print(f"ðŸ“¥ Sending compressed version (original ZIP not found): {document.file_path}")
             return send_file(
                 document.file_path,
                 as_attachment=False,
@@ -1260,14 +1260,14 @@ def utility_processor():
 
 
 # ============================================================
-# ?? BOT GATEWAY INTEGRATION (Telegram + WhatsApp)
+# 🔗 BOT GATEWAY INTEGRATION (Telegram + WhatsApp)
 # ============================================================
 import threading
 import requests
 from flask import request
 
 # --- Optional Bot Configuration (fill later) ---
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_TOKEN", "8382223651:AAHxFibITMhyAAWAb644Jv7wlqQAfHR4M5w")  # e.g. 123456789:ABC...
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_TOKEN", "")  # e.g. 123456789:ABC...
 WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN", "")          # Meta Access Token
 WHATSAPP_PHONE_ID = os.getenv("WHATSAPP_PHONE_ID", "")    # e.g. 123456789012345
 WEBHOOK_VERIFY_TOKEN = os.getenv("WEBHOOK_VERIFY_TOKEN", "myverifytoken")
@@ -1298,7 +1298,7 @@ def handle_user_query(source, sender_id, message_text):
             if resp.status_code == 201:
                 return " Registration successful! You can now use /login or /list."
             else:
-                return f"? Registration failed: {resp.json().get('message', 'Unknown error')}"
+                return f"️ Registration failed: {resp.json().get('message', 'Unknown error')}"
         except Exception as e:
             return f" Error during registration: {e}"
 
@@ -1406,9 +1406,9 @@ if __name__ == '__main__':
             admin.set_password('Admin123!')
             db.session.add(admin)
             db.session.commit()
-            print("✓ Admin user created: admin / Admin123!")
+            print("âœ“ Admin user created: admin / Admin123!")
         else:
-            print("✓ Admin user already exists")
+            print("âœ“ Admin user already exists")
 
         # Create test user if not exists
         if not User.query.filter_by(username='test').first():
@@ -1416,9 +1416,9 @@ if __name__ == '__main__':
             test_user.set_password('Test123!')
             db.session.add(test_user)
             db.session.commit()
-            print("✓ Test user created: test / Test123!")
+            print("âœ“ Test user created: test / Test123!")
         else:
-            print("✓ Test user already exists")
+            print("âœ“ Test user already exists")
 
     print(" PDF Archive Server starting...")
     print(" Web Interface: http://192.168.10.106:5000")
@@ -1427,20 +1427,20 @@ if __name__ == '__main__':
     print(" Public Document Library: http://192.168.10.106:5000/public/library")
     print(" Default Login: admin / Admin123!")
     print("\nAvailable API Endpoints:")
-    print("  • POST   /api/auth/login     - User login with JWT")
-    print("  • POST   /api/auth/register  - User registration")
-    print("  • POST   /api/auth/verify-token - Verify JWT token")
-    print("  • GET    /api/auth/test-auth - Test JWT authentication")
-    print("  • GET    /api/documents      - List user documents")
-    print("  • POST   /api/documents      - Upload PDF document")
-    print("  • GET    /api/documents/<id> - Get specific document")
-    print("  • DELETE /api/documents/<id> - Delete document")
+    print("  â€¢ POST   /api/auth/login     - User login with JWT")
+    print("  â€¢ POST   /api/auth/register  - User registration")
+    print("  â€¢ POST   /api/auth/verify-token - Verify JWT token")
+    print("  â€¢ GET    /api/auth/test-auth - Test JWT authentication")
+    print("  â€¢ GET    /api/documents      - List user documents")
+    print("  â€¢ POST   /api/documents      - Upload PDF document")
+    print("  â€¢ GET    /api/documents/<id> - Get specific document")
+    print("  â€¢ DELETE /api/documents/<id> - Delete document")
     print("\nPublic Access Endpoints (No Login Required):")
-    print("  • GET    /public/documents   - List all public documents")
-    print("  • GET    /public/documents/<id>/info - Get document info")
-    print("  • GET    /public/documents/<id>/view - View/download PDF")
-    print("  • GET    /public/stats       - Get statistics")
-    print("  • GET    /public/library     - Public library page")
+    print("  â€¢ GET    /public/documents   - List all public documents")
+    print("  â€¢ GET    /public/documents/<id>/info - Get document info")
+    print("  â€¢ GET    /public/documents/<id>/view - View/download PDF")
+    print("  â€¢ GET    /public/stats       - Get statistics")
+    print("  â€¢ GET    /public/library     - Public library page")
 
     # Start bots in background threads
     if TELEGRAM_BOT_TOKEN:
