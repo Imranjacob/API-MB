@@ -1,0 +1,24 @@
+text
+pdf_archive/
+├── app.py
+├── config.py
+├── requirements.txt
+├── templates/
+│   ├── base.html
+│   ├── index.html
+│   ├── login.html
+│   ├── dashboard.html
+│   ├── upload.html
+│   ├── search.html
+│   └── admin.html
+├── static/
+│   ├── css/
+│   ├── js/
+│   └── uploads/
+├── models/
+│   └── database.py
+├── utils/
+│   ├── security.py
+│   ├── file_utils.py
+│   └── pdf_processor.py
+└── tests/
